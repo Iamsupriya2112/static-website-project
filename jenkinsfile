@@ -1,0 +1,39 @@
+pipeline {
+    agent any
+
+    environment {
+        EC2_IP   = "13.204.66.192"
+        WEBROOT  = "/var/www/html"
+        CREDS    = "statickey"
+        REPO_URL = "https://github.com/Iamsupriya2112/static-website-project.git"
+        BRANCH   = "main"
+    }
+
+    stages {
+
+        stage('Pull Latest Code') {
+            steps {
+                git branch: BRANCH, url: REPO_URL
+            }
+        }
+
+        stage('Deploy to EC2') {
+            steps {
+                sshagent(credentials: [CREDS]) {
+                   sh """
+                        ssh -o StrictHostKeyChecking=no ubuntu@${EC2_IP} \\
+                        "sudo git config --global --add safe.directory ${WEBROOT} && \\
+                         if [ -d ${WEBROOT}/.git ]; then \\
+                         sudo git -C ${WEBROOT} reset --hard && sudo git -C ${WEBROOT} pull origin ${BRANCH}; \\
+                    else \\
+                         sudo rm -rf ${WEBROOT}/{,.} 2>/dev/null && sudo git clone -b ${BRANCH} ${REPO_URL} ${WEBROOT}; \\
+                         fi && \\
+                         sudo chmod -R 755 ${WEBROOT} && \\
+                         sudo chown -R www-data:www-data ${WEBROOT} && \\
+                         sudo systemctl restart nginx"
+                    """
+                 }
+            }
+        }
+    }
+}
