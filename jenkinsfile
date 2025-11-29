@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     environment {
-        EC2_IP   = "13.204.66.192"
+        EC2_IP   = "13.232.162.46"
         WEBROOT  = "/var/www/html"
-        CREDS    = "statickey"
+        CREDS    = "static-website-deploy"
         REPO_URL = "https://github.com/Iamsupriya2112/static-website-project.git"
         BRANCH   = "main"
     }
